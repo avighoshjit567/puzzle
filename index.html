@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="favicon.png">
+    <style>
+        body{
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+        h1{
+            text-align: center;
+            font-weight: bolder;
+            text-decoration: underline;
+        }
+        h4{
+            font-weight: bolder;
+            text-decoration: underline;
+        }
+        .left{
+            float: left;
+        }
+        .right{
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Word Puzzle</h1>
+        <div class="instruction" id="instruction">
+            <h4>Instruction</h4>
+            <ul>
+                <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Inventore harum dolorum dolorem asperiores similique! Quasi cupiditate architecto, exercitationem voluptatem id, tempore nemo minima commodi cum, fuga nulla harum voluptatibus natus.</li>
+
+                <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Inventore harum dolorum dolorem asperiores similique! Quasi cupiditate architecto, exercitationem voluptatem id, tempore nemo minima commodi cum, fuga nulla harum voluptatibus natus.</li>
+            </ul>
+        
+            <div class="start col-md-4" id="first_section">
+                <div class="">
+                    <label for="">Choose How many words to play the Puzzle</label>
+                    <select class="form-control form-control-sm" name="word_number" id="word_number">
+                        <option value="2">2</option>
+                        <option value="5">5</option>
+                        <option value="7">7</option>
+                        <option value="10">10</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm mt-1" id="btn_start">Start</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="game_section">
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-6">
+                    <div style="display: flex; justify-content: space-between;">
+                        <p class="left">Timer : <span id="min">00</span>:<span id="sec">00</span></p>
+                        <p class="right">Solved <span id="solved_words">0</span>/<span id="total_words"></span></p>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title text-center">Word No: #<span id="current_word_number"></span></h4>
+                            <p class="card-text text-center" id="current_word"></p>
+                            <label for="">Your Answer:</label>
+                            <input type="text" name="answer" class="mt-1 form-control form-control-sm" id="answer" placeholder="Write your Answer">
+                            
+                            <div style="display: flex; justify-content: space-between;">
+                                <button type="button" class="mt-1 btn btn-danger btn-sm left" id="skip">Skip</button>
+                                <button type="button" class="mt-1 btn btn-success btn-sm left" id="submit">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
+        </div>
+
+        <div class="summary" id="summary" style="display: none;margin-top: 30px;">
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title text-center">Congratulations!🎈</h4>
+                            <p class="card-text text-center">Total Words :<span id="summary_total_words"></span></p>
+                            <p class="card-text text-center">Correct Words :<span id="correct_words"></span></p>
+                            <p class="card-text text-center">Skip Words :<span id="skip_words"></span></p>
+                            <p class="card-text text-center">Wrong Words :<span id="wrong_words"></span></p>
+                            <p class="card-text text-center">Time Taken :<span id="time_taken"></span></p>
+                            <p class="card-text text-center">Success Rate :<span id="success_rate"></span></p>
+                            <button class="btn btn-primary btn-sm mt-1" id="btn_retry">Retry</button>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script type="module">
+        import {words,shuffle} from './word.js';
+        
+        let selected_words = [];
+        let solved_words = 0;
+        let skip_words = 0;
+        let current_index = 0;
+        let current_word = '';
+        let timer;
+        
+        let game_sec = document.getElementById("game_section");
+        document.addEventListener("DOMContentLoaded", function(e) {
+            game_sec.style.display = "none";
+        });
+        
+        let btn_start = document.getElementById("btn_start");
+        btn_start.addEventListener("click", function(){
+            timer_function();
+            let word_number = document.querySelector("#word_number").value;
+            let selected_words_indexes = [];
+            for(let i = 1;i<=word_number;i++){
+                let random_index = Math.floor(Math.random() * words.length);
+                if(!selected_words_indexes.includes(random_index)){
+                  selected_words.push(words[random_index]);
+                  selected_words_indexes.push(random_index);
+                } else {
+                  i--;
+                }
+            }
+
+            current_word = selected_words[current_index];
+            let shuffled_word = shuffle(selected_words[current_index]);
+
+            document.getElementById("current_word").innerText = shuffled_word;
+            document.getElementById("current_word_number").innerText = current_index + 1;
+            document.getElementById("total_words").innerText = word_number;
+            
+            game_sec.style.display = "block";
+            this.setAttribute("disabled","disabled");
+            document.getElementById("answer").value = '';
+            document.getElementById("answer").focus();
+        });
+
+        document.getElementById("submit").addEventListener("click",function(){
+            let answer = document.getElementById("answer").value;
+            if(answer == ''){
+                document.getElementById("answer").focus();
+            }else{
+                current_index++;
+                if(current_index == selected_words.length) {
+                    clearInterval(timer);
+                    if(current_word.toLowerCase() !== answer.toLowerCase()){
+                        alert("did not match");
+                    }else{
+                        solved_words++;
+                    }
+                    finish_game();
+                }else{
+                    document.getElementById("current_word_number").innerText = current_index + 1;
+                    if(current_word.toLowerCase() === answer.toLowerCase()){
+                        solved_words++;
+                        document.getElementById("solved_words").innerText = solved_words;
+                    }else{
+                        alert("did not match");
+                    }
+                    current_word = selected_words[current_index];
+                    document.getElementById("current_word").innerText = shuffle(current_word);
+                    document.getElementById("answer").value = '';
+                    document.getElementById("answer").focus();
+
+                }
+            }
+        });
+
+        document.getElementById("skip").addEventListener("click",function(){
+            let con = confirm("Are you sure to skip?");
+
+            if(con) {
+              current_index++;
+              skip_words++;
+              if(current_index == selected_words.length) {
+                clearInterval(timer);
+                finish_game();
+              } else {
+                current_word = selected_words[current_index];
+                document.getElementById("current_word_number").innerText = current_index+1;
+                document.getElementById("current_word").innerText = shuffle(current_word);
+                document.getElementById("answer").value = '';
+                document.getElementById("answer").focus();
+              }
+            } 
+        });
+
+        document.getElementById("btn_retry").addEventListener("click",function(){
+            window.location.reload();
+        });
+
+        function timer_function(){
+            let minute = 0;
+            let second = 0;
+
+            timer = setInterval(() => {
+                second++;
+                document.getElementById("sec").innerText = String(second).padStart(2, '0');
+                if(second == 60){
+                    minute++;
+                    document.getElementById("min").innerText = String(minute).padStart(2, '0');
+                    second = 0;
+                }
+            }, 1000);
+        }
+
+        function finish_game() {
+            let total_words = selected_words.length;
+            document.getElementById("summary_total_words").innerText = total_words;
+            document.getElementById("correct_words").innerText = solved_words;
+            document.getElementById("wrong_words").innerText = (total_words - skip_words) - solved_words;
+            if(skip_words > 0){
+                document.getElementById("skip_words").innerText = skip_words;
+            }
+            document.getElementById("time_taken").innerText = document.getElementById("min").innerText+":"+document.getElementById("sec").innerText;
+            document.getElementById("success_rate").innerText =  `${((solved_words/total_words)*100)}%`;
+
+            document.getElementById("instruction").style.display = "none";
+            document.getElementById("game_section").style.display = "none";
+            document.getElementById("summary").style.display = "block";
+        }
+    </script>
+</body>
+</html>
